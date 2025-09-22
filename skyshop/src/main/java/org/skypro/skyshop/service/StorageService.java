@@ -4,8 +4,10 @@ import org.skypro.skyshop.model.article.Article;
 import org.skypro.skyshop.model.product.Product;
 import org.skypro.skyshop.model.search.Searchable;
 import org.springframework.stereotype.Service;
+
 import java.util.*;
 import java.util.stream.Stream;
+import java.util.Optional;
 
 @Service
 public class StorageService {
@@ -96,8 +98,13 @@ public class StorageService {
         ).toList();
     }
 
-    public Product getProductById(UUID id) {
-        return products.get(id);
+    public Optional<Product> getProductById(UUID id) {
+        return Optional.ofNullable(products.get(id));
+    }
+
+    public Product getProductByIdOrThrow(UUID id) {
+        return getProductById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Продукт с ID " + id + " не найден"));
     }
 
     public Article getArticleById(UUID id) {
