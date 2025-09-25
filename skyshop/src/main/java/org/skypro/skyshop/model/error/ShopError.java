@@ -21,7 +21,7 @@ public class ShopError {
 
     @Override
     public boolean equals(Object o) {
-        if (this == 0) return true;
+        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ShopError shopError = (ShopError) o;
         return Objects.equals(code, shopError.code) && Objects.equals(message, shopError.message);
