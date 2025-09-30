@@ -3,6 +3,7 @@ package org.skypro.skyshop.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.skypro.skyshop.exception.NoSuchProductException;
@@ -24,12 +25,8 @@ class BasketServiceTest {
     @Mock
     private StorageService storageService;
 
+    @InjectMocks
     private BasketService basketService;
-
-    @BeforeEach
-    void setUp() {
-        basketService = new BasketService(productBasket, storageService);
-    }
 
     @Test
     void shouldThrowExceptionWhenAddingNonexistentProduct() {
@@ -80,8 +77,8 @@ class BasketServiceTest {
         Product product2 = createMockProduct(productId2, "Product 2", 200);
 
         Map<UUID, Integer> basketMap = new HashMap<>();
-        basketMap.put(productId1, 2); // 2 штуки продукта 1
-        basketMap.put(productId2, 1); // 1 штука продукта 2
+        basketMap.put(productId1, 2);
+        basketMap.put(productId2, 1);
 
         when(productBasket.getProducts()).thenReturn(basketMap);
         when(storageService.getProductByIdOrThrow(productId1)).thenReturn(product1);
@@ -89,16 +86,17 @@ class BasketServiceTest {
 
         UserBasket userBasket = basketService.getUserBasket();
 
-        assertNotNull(userBasket);
-        assertEquals(2, userBasket.getItems().size());
-        assertEquals(400, userBasket.getTotal()); // (100 * 2) + (200 * 1) = 400
+        assertNotNull(userBasket, "Корзина не должна быть null");
+        assertEquals(2, userBasket.getItems().size(), "Должно быть 2 элемента в корзине");
+        int expectedTotal = (100 * 2) + (200 * 1);
+        assertEquals(expectedTotal, userBasket.getTotal(), "Общая стоимость должна быть 400");
 
-        List<UUID> itemIds = userBasket.getItems().stream()
+        List<UUID> actualItemIds = userBasket.getItems().stream()
                 .map(item -> item.getProduct().getId())
                 .collect(Collectors.toList());
 
-        assertTrue(itemIds.contains(productId1));
-        assertTrue(itemIds.contains(productId2));
+        assertTrue(actualItemIds.contains(productId1), "Корзина должна содержать продукт с ID " + productId1);
+        assertTrue(actualItemIds.contains(productId2), "Корзина должна содержать продукт с ID " + productId2);
 
         verify(productBasket).getProducts();
         verify(storageService).getProductByIdOrThrow(productId1);
